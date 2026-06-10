@@ -20,6 +20,9 @@ pipeline {
         }
 
         stage('Server') {
+            options {
+                timeout(time: 30, unit: 'MINUTES')
+            }
             steps {
                 dir('server') {
                     sh '''
@@ -27,19 +30,24 @@ pipeline {
                         go mod download
                         mkdir -p ../bin
                         go test -tags "json1 sqlite3" -count=1 -coverprofile=coverage.out ./...
-                        go build -tags "json1 sqlite3" -o ../bin/focalboard-server ./main
+                        echo "Building focalboard-server binary..."
+                        go build -v -tags "json1 sqlite3" -o ../bin/focalboard-server ./main
+                        ls -lh ../bin/focalboard-server
                     '''
                 }
             }
         }
 
         stage('Webapp') {
+            options {
+                timeout(time: 40, unit: 'MINUTES')
+            }
             steps {
                 dir('webapp') {
                     sh '''
                         set -eu
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
-                        npm ci --no-optional
+                        npm ci --legacy-peer-deps --omit=optional
                         npm run check
                         npm run test -- --coverage --runInBand
                         npm run pack
