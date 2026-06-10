@@ -7,6 +7,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const outpath = path.resolve(__dirname, 'pack');
+const tsconfigPath = path.resolve(__dirname, 'tsconfig.build.json');
 
 function makeCommonConfig() {
     const commonConfig = {
@@ -29,6 +30,7 @@ function makeCommonConfig() {
                     use: {
                         loader: 'ts-loader',
                         options: {
+                            configFile: tsconfigPath,
                             getCustomTransformers: {
                                 before: [
                                     tsTransformer.transform({

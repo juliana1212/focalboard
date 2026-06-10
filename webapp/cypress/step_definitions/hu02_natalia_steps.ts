@@ -1,4 +1,4 @@
-import { Given, When, Then } from "cypress-cucumber-preprocessor/steps";
+import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 
 // Ignorar errores de login 401
 Cypress.on("uncaught:exception", () => false);

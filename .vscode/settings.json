@@ -7,6 +7,8 @@
         "typescript",
         "typescriptreact"
     ],
+    "typescript.tsdk": "webapp/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
     "files.exclude": {
         ".vscode": false,
         "**/__snapshots__": false,

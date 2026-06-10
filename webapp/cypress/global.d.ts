@@ -30,5 +30,11 @@ declare namespace Cypress {
          */
         uiCreateBoard: (item: string) => Chainable
         uiCreateEmptyBoard: () => Chainable
+
+        injectAxePage: () => Chainable
+        checkA11yPage: (
+            context?: string | Node | import("axe-core").ContextObject,
+            options?: import("cypress-axe").Options,
+        ) => Chainable
     }
 }

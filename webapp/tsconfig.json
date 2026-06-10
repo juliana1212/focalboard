@@ -1,28 +1,9 @@
 {
+    "extends": "./tsconfig.build.json",
     "compilerOptions": {
-        "jsx": "react",
-        "target": "es2019",
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "noImplicitAny": true,
-        "strict": true,
-        "strictNullChecks": true,
-        "forceConsistentCasingInFileNames": true,
-        "sourceMap": true,
-        "allowJs": true,
-        "resolveJsonModule": true,
-        "incremental": false,
-        "baseUrl": "src",
-        "outDir": "./dist",
-        "moduleResolution": "node"
+        "ignoreDeprecations": "6.0"
     },
     "include": [
         "."
-    ],
-    "exclude": [
-        ".git",
-        "**/node_modules/*",
-        "dist",
-        "pack"
     ]
 }
