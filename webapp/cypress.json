@@ -1,6 +1,7 @@
 {
   "chromeWebSecurity": false,
   "baseUrl": "http://localhost:8000",
+  "integrationFolder": "cypress/integration",
   "testFiles": [
     "**/*.cy.js"
   ],

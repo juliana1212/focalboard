@@ -4,11 +4,14 @@
         "noEmit": true,
         "types": [
             "cypress",
+            "cypress-axe",
             "cypress-real-events",
             "@testing-library/cypress"
         ]
     },
     "include": [
-        "**/*.ts"
+        "**/*.ts",
+        "cypress/**/*.ts",
+        "cypress/**/*.js"
     ]
 }
