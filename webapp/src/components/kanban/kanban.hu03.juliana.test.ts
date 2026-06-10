@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 /*
- * Pruebas unitarias frontend - HU03 Juliana
+ * Pruebas unitarias automatizadas frontend - HU03 Juliana
  *
  * Historia de usuario:
  * Como usuario, quiero mover tareas entre columnas arrastrando y soltando,
@@ -15,6 +15,17 @@
  * Funciones analizadas:
  * onDropToColumn()
  * onDropToCard()
+ *
+ * Herramienta:
+ * Jest
+ *
+ * Técnicas aplicadas según rúbrica:
+ * - Patrón AAA: Arrange, Act, Assert.
+ * - Principios FIRST: Fast, Independent, Repeatable, Self-validating, Timely.
+ * - Test Double indirecto: lectura controlada del archivo fuente para validar
+ *   la estructura lógica sin depender de una interacción real de drag and drop.
+ * - Aserciones expresivas tipo Fluent Assertions mediante expect().
+ * - Cobertura por caminos independientes derivados del grafo de flujo de control.
  *
  * Caminos cubiertos:
  * P1: Movimiento de tarjeta hacia otra columna.
@@ -32,11 +43,23 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+/*
+ * Test Double / apoyo de prueba:
+ * Esta función permite leer el archivo fuente kanban.tsx de manera controlada.
+ * Con esto se valida la estructura del código sin depender de la interfaz real,
+ * del navegador ni de una acción física de drag and drop.
+ */
 function leerCodigoHU03Frontend(): string {
     const rutaArchivo = path.join(__dirname, 'kanban.tsx')
     return fs.readFileSync(rutaArchivo, 'utf8')
 }
 
+/*
+ * Función de apoyo:
+ * Permite comparar fragmentos de código eliminando espacios, saltos de línea
+ * y tabulaciones. Esto hace que las pruebas sean más repetibles frente a
+ * diferencias menores de formato.
+ */
 function normalizarCodigo(codigo: string): string {
     return codigo
         .replace(/\s+/g, '')
@@ -54,11 +77,12 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Camino P1:
          * N1-N2-N3-N4-N5-N6-N7-N8-N10-N11-N12-N13-N14-N15-N16-N17-N18-N20-N21-N22-N55
          *
-         * Este camino representa el movimiento de una tarjeta hacia una columna diferente.
-         * En este caso, el sistema debe actualizar la propiedad de la tarjeta y actualizar
-         * el orden visual del tablero.
+         * Resultado esperado:
+         * El sistema debe actualizar la propiedad de la tarjeta mediante
+         * changePropertyValue() y actualizar el orden visual con changeViewCardOrder().
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
         const validaciones = [
@@ -80,6 +104,7 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
             'await Promise.all(awaits)',
         ]
 
+        // Act + Assert
         for (const texto of validaciones) {
             expect(codigo).toContain(texto)
         }
@@ -90,18 +115,25 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P2 del grafo de flujo de control.
          *
-         * Este camino representa un movimiento en el que la tarjeta no cambia de columna.
-         * Por lo tanto, no se requiere actualizar la propiedad de la tarjeta, pero sí se
-         * conserva la actualización del orden visual.
+         * Resultado esperado:
+         * Si la tarjeta no cambia de columna, no se requiere actualizar su propiedad,
+         * pero sí debe conservarse la actualización del orden visual.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
+        // Act
+        const contieneValidacionDeMismaColumna = codigo.includes('if (optionId !== oldValue)')
+        const contieneActualizacionDePropiedad = codigo.includes('mutator.changePropertyValue')
+        const contieneActualizacionDeOrden = codigo.includes('mutator.changeViewCardOrder')
+
+        // Assert
         expect(codigo).toContain('const oldValue = draggedCard.fields.properties[groupByProperty!.id]')
-        expect(codigo).toContain('if (optionId !== oldValue)')
-        expect(codigo).toContain('mutator.changePropertyValue')
+        expect(contieneValidacionDeMismaColumna).toBe(true)
+        expect(contieneActualizacionDePropiedad).toBe(true)
         expect(codigo).toContain('const newOrder = orderAfterMoveToColumn(draggedCardIds, optionId)')
-        expect(codigo).toContain('mutator.changeViewCardOrder')
+        expect(contieneActualizacionDeOrden).toBe(true)
     })
 
     test('PU-HU03F-03 - P3 - reorganización de columna hacia la izquierda', () => {
@@ -109,18 +141,26 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P3 del grafo de flujo de control.
          *
-         * Este camino representa el caso en el que no hay tarjetas arrastradas,
-         * pero existe dstOption y la columna se reorganiza hacia la izquierda.
+         * Resultado esperado:
+         * Cuando no hay tarjetas arrastradas, pero existe dstOption y la columna se
+         * mueve hacia la izquierda, el sistema debe reorganizar las columnas visibles.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('} else if (dstOption) {')
+        // Act
+        const contieneDstOption = codigo.includes('} else if (dstOption) {')
+        const contieneMoveToAboveRow = codigo.includes("const moveTo = (srcBlockX > dstBlockX ? 'aboveRow' : 'belowRow') as Position")
+        const contieneReorganizacion = codigo.includes('dragAndDropRearrange')
+
+        // Assert
+        expect(contieneDstOption).toBe(true)
         expect(codigo).toContain('const visibleOptionIds = visibleGroups.map((o) => o.option.id)')
         expect(codigo).toContain('const srcBlockX = visibleOptionIds.indexOf(option.id)')
         expect(codigo).toContain('const dstBlockX = visibleOptionIds.indexOf(dstOption.id)')
-        expect(codigo).toContain("const moveTo = (srcBlockX > dstBlockX ? 'aboveRow' : 'belowRow') as Position")
-        expect(codigo).toContain('dragAndDropRearrange')
+        expect(contieneMoveToAboveRow).toBe(true)
+        expect(contieneReorganizacion).toBe(true)
         expect(codigo).toContain('mutator.changeViewVisibleOptionIds')
     })
 
@@ -129,15 +169,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P4 del grafo de flujo de control.
          *
-         * Este camino representa el caso en el que no hay tarjetas arrastradas,
-         * pero existe dstOption y la columna se reorganiza hacia la derecha.
+         * Resultado esperado:
+         * Cuando no hay tarjetas arrastradas, pero existe dstOption y la columna se
+         * mueve hacia la derecha, el sistema debe reorganizar las columnas visibles.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain("srcBlockX > dstBlockX ? 'aboveRow' : 'belowRow'")
-        expect(codigo).toContain('moveTo')
-        expect(codigo).toContain('visibleOptionIdsRearranged')
+        // Act
+        const contieneCondicionDireccion = codigo.includes("srcBlockX > dstBlockX ? 'aboveRow' : 'belowRow'")
+        const contieneMoveTo = codigo.includes('moveTo')
+        const contieneOpcionesReordenadas = codigo.includes('visibleOptionIdsRearranged')
+
+        // Assert
+        expect(contieneCondicionDireccion).toBe(true)
+        expect(contieneMoveTo).toBe(true)
+        expect(contieneOpcionesReordenadas).toBe(true)
         expect(codigo).toContain('dragAndDropRearrange')
         expect(codigo).toContain('mutator.changeViewVisibleOptionIds')
     })
@@ -147,15 +195,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P5 del grafo de flujo de control.
          *
-         * Este camino representa el caso en el que draggedCardIds no tiene elementos
-         * y tampoco existe dstOption. En ese escenario, el flujo no realiza cambios.
+         * Resultado esperado:
+         * Si no existen tarjetas arrastradas y tampoco existe dstOption,
+         * el flujo debe finalizar sin realizar cambios.
          */
 
+        // Arrange
         const codigo = normalizarCodigo(leerCodigoHU03Frontend())
 
-        expect(codigo).toContain('if(draggedCardIds.length>0)')
-        expect(codigo).toContain('}elseif(dstOption){')
-        expect(codigo).toContain('mutator.changeViewVisibleOptionIds')
+        // Act
+        const contieneValidacionTarjetasArrastradas = codigo.includes('if(draggedCardIds.length>0)')
+        const contieneRamaDstOption = codigo.includes('}elseif(dstOption){')
+        const contieneCambioOpcionesVisibles = codigo.includes('mutator.changeViewVisibleOptionIds')
+
+        // Assert
+        expect(contieneValidacionTarjetasArrastradas).toBe(true)
+        expect(contieneRamaDstOption).toBe(true)
+        expect(contieneCambioOpcionesVisibles).toBe(true)
     })
 
     test('PU-HU03F-06 - P6 - movimiento inválido sobre la misma tarjeta', () => {
@@ -163,16 +219,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P6 del grafo de flujo de control.
          *
-         * Este camino representa la validación de onDropToCard().
+         * Resultado esperado:
          * Si la tarjeta origen es igual a la tarjeta destino, o si no existe
-         * groupByProperty, el flujo debe finalizar sin cambios.
+         * groupByProperty, el flujo debe retornar sin realizar cambios.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('const onDropToCard = useCallback')
-        expect(codigo).toContain('if (srcCard.id === dstCard.id || !groupByProperty)')
-        expect(codigo).toContain('return')
+        // Act
+        const contieneDropToCard = codigo.includes('const onDropToCard = useCallback')
+        const contieneValidacionMovimientoInvalido = codigo.includes('if (srcCard.id === dstCard.id || !groupByProperty)')
+        const contieneReturn = codigo.includes('return')
+
+        // Assert
+        expect(contieneDropToCard).toBe(true)
+        expect(contieneValidacionMovimientoInvalido).toBe(true)
+        expect(contieneReturn).toBe(true)
     })
 
     test('PU-HU03F-07 - P7 - movimiento sobre tarjeta en la misma columna hacia abajo', () => {
@@ -180,15 +243,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P7 del grafo de flujo de control.
          *
-         * Este camino representa el movimiento de una tarjeta dentro de la misma columna,
-         * hacia una posición inferior. En ese caso se debe ajustar destIndex.
+         * Resultado esperado:
+         * Cuando una tarjeta se mueve dentro de la misma columna hacia una posición
+         * inferior, el sistema debe ajustar destIndex y actualizar el orden visual.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('const isDraggingDown = cardOrder.indexOf(srcCard.id) <= cardOrder.indexOf(dstCard.id)')
-        expect(codigo).toContain('if (srcCard.fields.properties[groupByProperty!.id] === optionId && isDraggingDown)')
-        expect(codigo).toContain('destIndex += 1')
+        // Act
+        const contieneDraggingDown = codigo.includes('const isDraggingDown = cardOrder.indexOf(srcCard.id) <= cardOrder.indexOf(dstCard.id)')
+        const contieneMismaColumna = codigo.includes('if (srcCard.fields.properties[groupByProperty!.id] === optionId && isDraggingDown)')
+        const contieneAjusteDestIndex = codigo.includes('destIndex += 1')
+
+        // Assert
+        expect(contieneDraggingDown).toBe(true)
+        expect(contieneMismaColumna).toBe(true)
+        expect(contieneAjusteDestIndex).toBe(true)
         expect(codigo).toContain('cardOrder.splice(destIndex, 0, ...draggedCardIds)')
         expect(codigo).toContain('mutator.changeViewCardOrder')
     })
@@ -198,16 +269,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P8 del grafo de flujo de control.
          *
-         * Este camino representa el caso en el que una tarjeta se suelta sobre otra
-         * tarjeta ubicada en una columna diferente. Por lo tanto, se actualiza
-         * la propiedad de la tarjeta y el orden visual.
+         * Resultado esperado:
+         * Cuando una tarjeta se suelta sobre otra tarjeta ubicada en una columna
+         * diferente, se debe actualizar la propiedad de la tarjeta y el orden visual.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('const optionId = dstCard.fields.properties[groupByProperty.id]')
-        expect(codigo).toContain('const oldOptionId = draggedCard.fields.properties[groupByProperty!.id]')
-        expect(codigo).toContain('if (optionId !== oldOptionId)')
+        // Act
+        const contieneOptionDestino = codigo.includes('const optionId = dstCard.fields.properties[groupByProperty.id]')
+        const contieneOldOption = codigo.includes('const oldOptionId = draggedCard.fields.properties[groupByProperty!.id]')
+        const contieneCambioDeColumna = codigo.includes('if (optionId !== oldOptionId)')
+
+        // Assert
+        expect(contieneOptionDestino).toBe(true)
+        expect(contieneOldOption).toBe(true)
+        expect(contieneCambioDeColumna).toBe(true)
         expect(codigo).toContain('mutator.changePropertyValue')
         expect(codigo).toContain('mutator.changeViewCardOrder')
     })
@@ -217,16 +295,23 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P9 del grafo de flujo de control.
          *
-         * Este camino representa el movimiento sobre otra tarjeta cuando no cambia
-         * la columna. En este caso no se requiere changePropertyValue(), pero sí
-         * se actualiza el orden visual con changeViewCardOrder().
+         * Resultado esperado:
+         * Si la tarjeta se mueve sobre otra tarjeta sin cambiar de columna,
+         * no se actualiza la propiedad, pero sí se actualiza el orden visual.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('if (optionId !== oldOptionId)')
-        expect(codigo).toContain('await Promise.all(awaits)')
-        expect(codigo).toContain('await mutator.changeViewCardOrder(props.board.id, activeView.id, activeView.fields.cardOrder, cardOrder, description)')
+        // Act
+        const contieneValidacionCambioColumna = codigo.includes('if (optionId !== oldOptionId)')
+        const contienePromiseAll = codigo.includes('await Promise.all(awaits)')
+        const contieneCambioOrden = codigo.includes('await mutator.changeViewCardOrder(props.board.id, activeView.id, activeView.fields.cardOrder, cardOrder, description)')
+
+        // Assert
+        expect(contieneValidacionCambioColumna).toBe(true)
+        expect(contienePromiseAll).toBe(true)
+        expect(contieneCambioOrden).toBe(true)
     })
 
     test('PU-HU03F-10 - P10 - movimiento a columna sin cambio de propiedad', () => {
@@ -234,16 +319,24 @@ describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {
          * Objetivo:
          * Validar el camino P10 del grafo de flujo de control.
          *
-         * Este camino representa el caso en el que existe card, pero la columna destino
-         * coincide con el valor anterior de la tarjeta. Por esta razón no se actualiza
-         * la propiedad, pero sí se recalcula y actualiza el orden visual.
+         * Resultado esperado:
+         * Si existe card, pero la columna destino coincide con el valor anterior,
+         * no se actualiza la propiedad, pero sí se recalcula y actualiza el orden visual.
          */
 
+        // Arrange
         const codigo = leerCodigoHU03Frontend()
 
-        expect(codigo).toContain('if (card)')
-        expect(codigo).toContain('if (optionId !== oldValue)')
-        expect(codigo).toContain('const newOrder = orderAfterMoveToColumn(draggedCardIds, optionId)')
-        expect(codigo).toContain('mutator.changeViewCardOrder')
+        // Act
+        const contieneCard = codigo.includes('if (card)')
+        const contieneValidacionOldValue = codigo.includes('if (optionId !== oldValue)')
+        const contieneNuevoOrden = codigo.includes('const newOrder = orderAfterMoveToColumn(draggedCardIds, optionId)')
+        const contieneActualizacionOrden = codigo.includes('mutator.changeViewCardOrder')
+
+        // Assert
+        expect(contieneCard).toBe(true)
+        expect(contieneValidacionOldValue).toBe(true)
+        expect(contieneNuevoOrden).toBe(true)
+        expect(contieneActualizacionOrden).toBe(true)
     })
 })
