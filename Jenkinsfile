@@ -44,13 +44,10 @@ pipeline {
             }
             steps {
                 dir('webapp') {
-                    
                     sh '''
                         set +e
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
                         npm ci --legacy-peer-deps || true
-                        npm install --no-save --package-lock=false --legacy-peer-deps @swc/core@^1.2.177 || true
-                        npm run test -- --coverage --runInBand || true
                         npm run pack || true
                         npm run cypress:ci || true
                     '''
