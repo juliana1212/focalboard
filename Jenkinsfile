@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-        /* stage('Server') {
+        stage('Server') {
             options {
                 timeout(time: 30, unit: 'MINUTES')
             }
@@ -36,9 +36,9 @@ pipeline {
                     '''
                 }
             }
-        } */
+        }
 
-        stage('Webapp') {
+        stage('Webapp Build') {
             options {
                 timeout(time: 40, unit: 'MINUTES')
             }
@@ -49,10 +49,113 @@ pipeline {
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
                         npm ci --legacy-peer-deps || true
                         npm run pack || true
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress Regression') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
                         if [ -f pack/index.html ]; then
-                            npm run cypress:ci || true
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/regression.cy.js" || true
                         else
-                            echo "Skipping cypress: pack/index.html was not generated"
+                            echo "Skipping Cypress Regression: pack/index.html was not generated"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress Security') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
+                        if [ -f pack/index.html ]; then
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/security.cy.js" || true
+                        else
+                            echo "Skipping Cypress Security: pack/index.html was not generated"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress Accessibility') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
+                        if [ -f pack/index.html ]; then
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/accessibility.cy.js" || true
+                        else
+                            echo "Skipping Cypress Accessibility: pack/index.html was not generated"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress HU01') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
+                        if [ -f pack/index.html ]; then
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/hu01_angie_crear_tablero.cy.js" || true
+                        else
+                            echo "Skipping Cypress HU01: pack/index.html was not generated"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress HU02') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
+                        if [ -f pack/index.html ]; then
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/hu02_natalia_crear_tarea.cy.js" || true
+                        else
+                            echo "Skipping Cypress HU02: pack/index.html was not generated"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cypress HU03') {
+            options {
+                timeout(time: 20, unit: 'MINUTES')
+            }
+            steps {
+                dir('webapp') {
+                    sh '''
+                        set +e
+                        if [ -f pack/index.html ]; then
+                            ./node_modules/.bin/start-server-and-test runserver-test http://localhost:8088 "npm run cypress:run -- --spec cypress/integration/hu03_juliana_drag_drop.cy.js" || true
+                        else
+                            echo "Skipping Cypress HU03: pack/index.html was not generated"
                         fi
                     '''
                 }
@@ -82,7 +185,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'bin/**, server/coverage.out, webapp/coverage/**, webapp/pack/**, sonar-scanner.log', allowEmptyArchive: true, fingerprint: true
+            archiveArtifacts artifacts: 'bin/**, server/coverage.out, webapp/coverage/**, webapp/pack/**, webapp/cypress/videos/**, webapp/cypress/screenshots/**, sonar-scanner.log', allowEmptyArchive: true, fingerprint: true
         }
     }
 }
