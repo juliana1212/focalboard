@@ -48,7 +48,7 @@ pipeline {
                         set -eu
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
                         npm ci --legacy-peer-deps
-                        npm install --no-save --package-lock=false @swc/core@^1.2.177
+                        npm install --no-save --package-lock=false --legacy-peer-deps @swc/core@^1.2.177
                         npm run test -- --coverage --runInBand
                         npm run pack
                         npm run cypress:ci
