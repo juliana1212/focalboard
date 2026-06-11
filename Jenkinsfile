@@ -10,6 +10,7 @@ pipeline {
     environment {
         EXCLUDE_ENTERPRISE = '1'
         SONAR_HOST_URL = 'http://sonarqube:9000'
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
@@ -72,11 +73,7 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-                    if [ -n "${SONAR_TOKEN:-}" ]; then
-                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
-                    else
-                        echo "Skipping Sonar scan: SONAR_TOKEN is not set"
-                    fi
+                    sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
                 '''
             }
         }
