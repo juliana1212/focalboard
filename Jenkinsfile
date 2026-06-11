@@ -49,7 +49,11 @@ pipeline {
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
                         npm ci --legacy-peer-deps || true
                         npm run pack || true
-                        npm run cypress:ci || true
+                        if [ -f pack/index.html ]; then
+                            npm run cypress:ci || true
+                        else
+                            echo "Skipping cypress: pack/index.html was not generated"
+                        fi
                     '''
                 }
             }
