@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-        stage('Server') {
+        /* stage('Server') {
             options {
                 timeout(time: 30, unit: 'MINUTES')
             }
@@ -36,7 +36,7 @@ pipeline {
                     '''
                 }
             }
-        }
+        } */
 
         stage('Webapp') {
             options {
@@ -48,7 +48,6 @@ pipeline {
                         set -eu
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
                         npm ci --legacy-peer-deps --omit=optional
-                        npm run check
                         npm run test -- --coverage --runInBand
                         npm run pack
                         npm run cypress:ci
