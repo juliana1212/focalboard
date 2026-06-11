@@ -10,7 +10,6 @@ pipeline {
     environment {
         EXCLUDE_ENTERPRISE = '1'
         SONAR_HOST_URL = 'http://sonarqube:9000'
-        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
@@ -71,10 +70,12 @@ pipeline {
 
         stage('Sonar Scan') {
             steps {
-                sh '''
-                    set -eu
-                    sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
-                '''
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        set -eu
+                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
+                    '''
+                }
             }
         }
     }
