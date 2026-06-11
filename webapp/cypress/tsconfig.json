@@ -1,14 +1,19 @@
 {
-    "extends": "../tsconfig.json",
+    "extends": "../tsconfig.build.json",
     "compilerOptions": {
         "noEmit": true,
+        "skipLibCheck": true,
         "types": [
             "cypress",
+            "cypress-axe",
             "cypress-real-events",
-            "@testing-library/cypress"
+            "@testing-library/cypress",
+            "node"
         ]
     },
     "include": [
-        "**/*.ts"
+        "**/*.ts",
+        "cypress/**/*.ts",
+        "cypress/**/*.js"
     ]
 }
