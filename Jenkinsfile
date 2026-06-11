@@ -73,9 +73,9 @@ pipeline {
                 sh '''
                     set -eu
                     if [ -n "${SONAR_TOKEN:-}" ]; then
-                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.login="$SONAR_TOKEN"
+                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
                     else
-                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL"
+                        echo "Skipping Sonar scan: SONAR_TOKEN is not set"
                     fi
                 '''
             }
