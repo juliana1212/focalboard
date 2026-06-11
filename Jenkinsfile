@@ -70,11 +70,21 @@ pipeline {
 
         stage('Sonar Scan') {
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                        set -eu
-                        sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN"
-                    '''
+                script {
+                    if (env.SONAR_TOKEN?.trim()) {
+                        sh '''
+                            set -euxo pipefail
+                            sonar-scanner -X -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" 2>&1 | tee sonar-scanner.log
+                        '''
+                    } else {
+                        withSonarQubeEnv('SonarQube') {
+                            sh '''
+                                set -euxo pipefail
+                                export SONAR_TOKEN="$SONAR_AUTH_TOKEN"
+                                sonar-scanner -X -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" 2>&1 | tee sonar-scanner.log
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -82,7 +92,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'bin/**, server/coverage.out, webapp/coverage/**, webapp/pack/**', allowEmptyArchive: true, fingerprint: true
+            archiveArtifacts artifacts: 'bin/**, server/coverage.out, webapp/coverage/**, webapp/pack/**, sonar-scanner.log', allowEmptyArchive: true, fingerprint: true
         }
     }
 }
