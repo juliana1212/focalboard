@@ -61,11 +61,7 @@ function leerCodigoHU03Frontend(): string {
  * diferencias menores de formato.
  */
 function normalizarCodigo(codigo: string): string {
-    return codigo
-        .replace(/\s+/g, '')
-        .replace(/\r/g, '')
-        .replace(/\n/g, '')
-        .replace(/\t/g, '')
+    return codigo.replace(/\s+/g, '').replace(/\r/g, '').replace(/\n/g, '').replace(/\t/g, '')
 }
 
 describe('HU03 Juliana - Mover tareas entre columnas - Frontend', () => {

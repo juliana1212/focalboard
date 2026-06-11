@@ -1,3 +1,6 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
 // ***********************************************************
 // This example support/e2e.ts is processed and
 // loaded automatically before your test files.
