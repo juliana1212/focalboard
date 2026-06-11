@@ -47,7 +47,7 @@ pipeline {
                     sh '''
                         set -eu
                         export CPPFLAGS="-DPNG_ARM_NEON_OPT=0"
-                        npm ci --legacy-peer-deps --omit=optional
+                        npm ci --legacy-peer-deps
                         npm run test -- --coverage --runInBand
                         npm run pack
                         npm run cypress:ci
