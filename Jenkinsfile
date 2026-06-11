@@ -70,21 +70,11 @@ pipeline {
 
         stage('Sonar Scan') {
             steps {
-                script {
-                    if (env.SONAR_TOKEN?.trim()) {
-                        sh '''
-                            set -euxo pipefail
-                            sonar-scanner -X -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" 2>&1 | tee sonar-scanner.log
-                        '''
-                    } else {
-                        withSonarQubeEnv('SonarQube') {
-                            sh '''
-                                set -euxo pipefail
-                                export SONAR_TOKEN="$SONAR_AUTH_TOKEN"
-                                sonar-scanner -X -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" 2>&1 | tee sonar-scanner.log
-                            '''
-                        }
-                    }
+                withCredentials([usernamePassword(credentialsId: 'SONAR_CREDENTIALS', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
+                    sh '''#!/bin/bash
+                        set -euo pipefail
+                        sonar-scanner -X -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.login="$SONAR_USERNAME" -Dsonar.password="$SONAR_PASSWORD" 2>&1 | tee sonar-scanner.log
+                    '''
                 }
             }
         }
